@@ -530,12 +530,12 @@ mod mock_transport {
             if !self.state.is_running() {
                 return Err(TransportError::NotRunning);
             }
-            if self.connections.len() >= self.config.max_connections {
+            if self.connections.len() >= self.config.max_connections as usize {
                 return Err(TransportError::MaxConnectionsReached);
             }
 
-            let conn_id = ConnectionId::generate();
             let info = ConnectionInfo::new(addr);
+            let conn_id = info.id().clone();
             self.connections.insert(conn_id.clone(), info);
             Ok(conn_id)
         }

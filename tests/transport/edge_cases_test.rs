@@ -482,10 +482,22 @@ async fn test_connect_after_server_restart() {
     // Connection should eventually fail
     sleep(Duration::from_millis(50)).await;
 
-    // Try to send - should fail
+    // Poll events to detect disconnection
+    let _ = client.poll_events().await;
+
+    // Try to send - may fail immediately or succeed (buffered write)
+    // Then poll again to detect failure
     let result = client.send(&conn_id, b"test").await;
-    // Either NotConnected or SendFailed
-    assert!(result.is_err());
+
+    // Give time for connection to detect failure
+    sleep(Duration::from_millis(100)).await;
+    let _ = client.poll_events().await;
+
+    // Second send after polling should definitely fail if connection is broken
+    let result2 = client.send(&conn_id, b"test2").await;
+
+    // At least one of them should fail, or connection was removed
+    assert!(result.is_err() || result2.is_err() || client.connection_count() == 0);
 
     client.stop().await.unwrap();
 }

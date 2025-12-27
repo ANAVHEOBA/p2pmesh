@@ -368,7 +368,10 @@ async fn test_tcp_transport_send_empty_message() {
     let result = client.send(&conn_id, &[]).await;
 
     // Should succeed with 0 bytes or return error
-    assert!(result.is_ok() && result.unwrap() == 0 || result.is_err());
+    match result {
+        Ok(bytes) => assert_eq!(bytes, 0),
+        Err(_) => {} // Error is also acceptable for empty sends
+    }
 
     client.stop().await.unwrap();
     server.stop().await.unwrap();
