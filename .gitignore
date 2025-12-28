@@ -1,1 +1,9 @@
+# Rust build artifacts
 /target
+/bridge/target
+
+# Generated bindings (can be regenerated with uniffi-bindgen)
+/bridge/bindings
+
+# Native libraries (built with cargo-ndk)
+/bridge/jniLibs
